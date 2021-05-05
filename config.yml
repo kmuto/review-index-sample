@@ -1,0 +1,24 @@
+review_version: 5.0
+bookname: book
+language: ja
+booktitle: 索引サンプル
+aut: ["武藤健志"]
+date: 2021-05-05
+history: [["2021-05-05"]]
+debug: null
+stylesheet: ["style.css"]
+toclevel: 3
+secnolevel: 2
+toc: true
+coverimage: cover.jpg
+epubmaker:
+  htmlext: xhtml
+  # 書き換えフック呼び出し
+  hook_afterbackmatter: ./hook_afterbackmatter.rb
+texstyle: ["reviewmacro"]
+texdocumentclass: ["review-jlreq", "media=print,paper=a5"]
+pdfmaker:
+  coverimage: cover-a5.ai
+  colophon: true
+  makeindex: true
+  makeindex_sty: mendex.ist
