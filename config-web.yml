@@ -1,0 +1,4 @@
+# rake web用
+# REVIEW_CONFIG_FILE=config-web.yml rake web として使う
+inherit: ['config.yml']
+catalogfile: catalog-with-dummy-index.yml

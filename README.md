@@ -17,4 +17,13 @@
 5. 残りの EPUB 生成作業を続ける。
 
 ## WebMaker での利用
-WebMaker にはフックの機能を提供していないため、rake web 後に hook_afterbackmatter.rb での作業内容を流用して \_rv\_index.xhtml を作り、これを目次に追加する必要がある。
+WebMaker にはフックの機能を提供していないのと、目次の作り方がよりシンプルで割り込みをかけるタイミングが難しい。
+
+そこで、次のようなテクニックを使ってみる。
+
+- ダミー索引ページ indices.re を作り、これをカタログに追加する。ただ、普通のカタログと混ぜるのはうまくないので、catalog-with-dummy-index.yml を作った。
+- WebMaker のみこのカタログを利用するよう、config-web.yml を用意する。デフォルトと異なるファイルとなるため、rake 実行時には `REVIEW_CONFIG_FILE=config-web.yml rake web` と実行する必要がある。
+- WebMaker 固有のフックとして、hook-afterbackmatter-web.rb を用意する。このフックスクリプトでは、WebMaker で indices.re から変換した HTML ファイル内の「◆REPLACE◆」行を、自動生成の索引 HTML コンテンツで置き換えるようにしている。
+- hook-afterbackmatter-web.rb は後で手動実行でもよいが、手間を減らすために lib/tasks/z02_webindex.rake ルールを用意した。これは rake web を実行したときに最後にフックスクリプトを呼び出してくれる。
+
+以上で、`REVIEW_CONFIG_FILE=config-web.yml rake web` により索引付きの Web ページができる。(なお、環境変数指示を忘れて普通の config.yml を読むとカタログファイルが違うので「No such file or directory @ rb_sysopen - webroot/indices.html (Errno::ENOENT)」となる)

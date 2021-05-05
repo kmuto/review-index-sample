@@ -17,7 +17,7 @@ module ReVIEW
       label = escape_comment(escape(str))
       no = sprintf('%04d', @book.indices.size)
       # 登場順でソートしやすいように頭にも通しナンバーを入れ、切り分け記号†を付けておく
-      @book.indices.push([label, "#{no}†#{@chapter.name}.xhtml#_RVIDX_#{no}"])
+      @book.indices.push([label, "#{no}†#{@chapter.name}.#{@book.config['htmlext']}#_RVIDX_#{no}"])
       %Q(<span id="_RVIDX_#{no}" class="rv_index_target"></span>)
     end
 
