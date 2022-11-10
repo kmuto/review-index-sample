@@ -1,9 +1,12 @@
 PREDEF:
+  - predef.re
 
 CHAPS:
   - indextest.re
   - index2.re
 
 APPENDIX:
+  - appendix.re
 
 POSTDEF:
+  - postdef.re

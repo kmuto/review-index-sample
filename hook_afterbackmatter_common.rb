@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # 全HTML変換後に索引をソートしてHTMLファイルを作成する
 require 'cgi'
+require 'pstore'
 
 class HookIndex
   def initialize
@@ -16,6 +17,8 @@ class HookIndex
     @makeindex_mecab_opts = '-Oyomi'
     # upmendexオプション
     @makeindex_options = "-f -r -s #{__dir__}/mendex_html.ist"
+    # HTMLファイル拡張子
+    @htmlext = 'xhtml'
 
     @metachars = {
         '{' => '\{',
@@ -161,9 +164,20 @@ EOT
   def parse_ind(srcind, fw)
     # indを解析して書き出し。レベル解析が怪しめ
     idx = 0
+
+    db = PStore.new('_RVIDX_store.pstore')
+    catalog = nil
+    db.transaction do
+      catalog = db['catalog']
+    end
+
     File.open(srcind) do |fi|
       fi.each_line do |l|
-        l = l.chomp.gsub('◆｛◆', '{').gsub('◆｝◆', '}').gsub('◆backslash◆', '\\')
+        l = l.chomp.gsub('◆｛◆', '{').gsub('◆｝◆', '}').gsub('◆backslash◆', '\\').
+              gsub(/(\d{3})_(\d{4})/) do
+          "#{catalog[$1.to_i]}.#{@htmlext}#_RVIDX_#{$2}"
+        end
+
         case l
         when /■H■(.+)/ # 見出し
           label = $1
@@ -221,8 +235,7 @@ EOT
   def make_line(labelp)
     label, nmbls = labelp.split("\t", 2)
     nmbl_array = nmbls.split(/, /).map do |nmbl|
-      # XXX:†前に索引カウンタが入っているので、ただ消さずに何かリンクマークと連携させる方法を考えられるかもしれない
-      %Q(<span class="rv_index_nmbl"><a href="#{nmbl.sub(/.+†/, '')}">#{@linkmark}</a></span>)
+      %Q(<span class="rv_index_nmbl"><a href="#{nmbl}">#{@linkmark}</a></span>)
     end
     l = %Q(<li><span class="rv_index_label">#{CGI.escape_html(label)}</span><span class="rv_index_delimiter">...</span>#{nmbl_array.join('<span class="rv_index_nmbl_delimiter">, </span>')})
   end
