@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+require 'pstore'
+
 module ReVIEW
   module Book
     class Base
@@ -11,13 +13,37 @@ module ReVIEW
       super
       # 索引カウンタが初期化されていなければ初期化
       @book.indices ||= []
+      @catalog = access_catalog
+    end
+
+    def access_catalog
+      catalog = []
+      if File.exist?('_RVIDX_store.pstore')
+        db = PStore.new('_RVIDX_store.pstore')
+        db.transaction do
+          catalog = db['catalog']
+        end
+      else
+        @book.parts.each do |part|
+          if part.file?
+            catalog.push(part.name)
+          end
+          part.chapters.each do |chap|
+            catalog.push(chap.name)
+          end
+        end
+        db = PStore.new('_RVIDX_store.pstore')
+        db.transaction do
+          db['catalog'] = catalog
+        end
+      end
+      catalog
     end
 
     def idxlabel(str)
       label = escape_comment(escape(str))
       no = sprintf('%04d', @book.indices.size)
-      # 登場順でソートしやすいように頭にも通しナンバーを入れ、切り分け記号†を付けておく
-      @book.indices.push([label, "#{no}†#{@chapter.name}.#{@book.config['htmlext']}#_RVIDX_#{no}"])
+      @book.indices.push([label, "#{sprintf('%03d', @catalog.index(@chapter.name.sub('.re', '')))}_#{no}"])
       %Q(<span id="_RVIDX_#{no}" class="rv_index_target"></span>)
     end
 
